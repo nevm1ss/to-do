@@ -34,6 +34,11 @@ const data = [
 
 const Home = () => {
   const [todos, setTodos] = useState(data);
+  const [newSubtaskData, setNewSubtaskData] = useState({
+    parentId: null,
+    title: '',
+    isFormVisible: false
+  });
 
   const changeTodo = (id) => {
     const updateTodos = (tasks) =>
@@ -78,14 +83,23 @@ const Home = () => {
   };
 
   const handleAddSubtask = (parentId) => {
-    const subtaskTitle = prompt('Enter the title for the new subtask:');
-    if (subtaskTitle) {
+    setNewSubtaskData({
+      parentId,
+      title: '',
+      isFormVisible: true
+    });
+  };
+
+  const handleSubmitSubtask = (e) => {
+    e.preventDefault();
+    if (newSubtaskData.title.trim()) {
       const newSubtask = {
-        _id: `${parentId}-sub${(todos.find(todo => todo._id === parentId)?.subtask?.length || 0) + 1}`,
-        title: subtaskTitle,
+        _id: `${newSubtaskData.parentId}-sub${(todos.find(todo => todo._id === newSubtaskData.parentId)?.subtask?.length || 0) + 1}`,
+        title: newSubtaskData.title,
         isCompleted: false,
       };
-      addSubtask(parentId, newSubtask);
+      addSubtask(newSubtaskData.parentId, newSubtask);
+      setNewSubtaskData({ parentId: null, title: '', isFormVisible: false });
     }
   };
 
@@ -103,6 +117,45 @@ const Home = () => {
           isMainTask={true}
         />
       ))}
+
+      {newSubtaskData.isFormVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-gray-800 p-6 rounded-lg w-96">
+            <form onSubmit={handleSubmitSubtask}>
+              <input
+                type="text"
+                value={newSubtaskData.title}
+                onChange={(e) => setNewSubtaskData({
+                  ...newSubtaskData,
+                  title: e.target.value
+                })}
+                placeholder="Enter subtask title"
+                className="bg-gray-700 text-white p-2 rounded w-full mb-4"
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setNewSubtaskData({
+                    parentId: null,
+                    title: '',
+                    isFormVisible: false
+                  })}
+                  className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Add
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
