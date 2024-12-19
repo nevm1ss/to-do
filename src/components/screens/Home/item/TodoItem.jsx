@@ -1,8 +1,8 @@
 import React from 'react';
-import Check from './Check';
+import Check from '@/components/screens/Home/item/Check';
 import cn from 'classnames';
 import { BsTrash } from 'react-icons/bs';
-import AddSubtaskButton from './AddSubtaskButton';
+import AddSubtaskButton from '@/components/screens/Home/item/AddSubtaskButton';
 
 const TodoItem = ({ todo, changeTodo, removeTodo, addSubtask, isMainTask }) => {
   return (
