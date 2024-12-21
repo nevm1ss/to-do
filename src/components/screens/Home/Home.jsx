@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TodoItem from './item/TodoItem';
 import CreateTodoField from './create-todo-field/CreateTodoField';
+import AddSubtaskModal from './components/AddSubtaskModal';
+import { useTodos } from '@/hooks/useTodos';
 
 const data = [
   {
@@ -33,75 +35,16 @@ const data = [
 ];
 
 const Home = () => {
-  const [todos, setTodos] = useState(data);
-  const [newSubtaskData, setNewSubtaskData] = useState({
-    parentId: null,
-    title: '',
-    isFormVisible: false
-  });
-
-  const changeTodo = (id) => {
-    const updateTodos = (tasks) =>
-      tasks.map((task) => {
-        if (task._id === id) {
-          return { ...task, isCompleted: !task.isCompleted };
-        }
-        if (task.subtask) {
-          return { ...task, subtask: updateTodos(task.subtask) };
-        }
-        return task;
-      });
-
-    setTodos(updateTodos(todos));
-  };
-
-  const removeTodo = (id) => {
-    const updateTodos = (tasks) =>
-      tasks
-        .map((task) => {
-          if (task.subtask) {
-            return { ...task, subtask: updateTodos(task.subtask) };
-          }
-          return task;
-        })
-        .filter((task) => task._id !== id);
-
-    setTodos(updateTodos(todos));
-  };
-
-  const addSubtask = (parentId, newSubtask) => {
-    setTodos(prevData =>
-      prevData.map(item =>
-        item._id === parentId
-          ? {
-              ...item,
-              subtask: [...(item.subtask || []), newSubtask],
-            }
-          : item
-      )
-    );
-  };
-
-  const handleAddSubtask = (parentId) => {
-    setNewSubtaskData({
-      parentId,
-      title: '',
-      isFormVisible: true
-    });
-  };
-
-  const handleSubmitSubtask = (e) => {
-    e.preventDefault();
-    if (newSubtaskData.title.trim()) {
-      const newSubtask = {
-        _id: `${newSubtaskData.parentId}-sub${(todos.find(todo => todo._id === newSubtaskData.parentId)?.subtask?.length || 0) + 1}`,
-        title: newSubtaskData.title,
-        isCompleted: false,
-      };
-      addSubtask(newSubtaskData.parentId, newSubtask);
-      setNewSubtaskData({ parentId: null, title: '', isFormVisible: false });
-    }
-  };
+  const {
+    todos,
+    setTodos,
+    newSubtaskData,
+    setNewSubtaskData,
+    changeTodo,
+    removeTodo,
+    handleAddSubtask,
+    handleSubmitSubtask
+  } = useTodos(data);
 
   return (
     <div className="text-white w-4/5 mx-auto">
@@ -119,42 +62,19 @@ const Home = () => {
       ))}
 
       {newSubtaskData.isFormVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-gray-800 p-6 rounded-lg w-96">
-            <form onSubmit={handleSubmitSubtask}>
-              <input
-                type="text"
-                value={newSubtaskData.title}
-                onChange={(e) => setNewSubtaskData({
-                  ...newSubtaskData,
-                  title: e.target.value
-                })}
-                placeholder="Enter subtask title"
-                className="bg-gray-700 text-white p-2 rounded w-full mb-4"
-                autoFocus
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setNewSubtaskData({
-                    parentId: null,
-                    title: '',
-                    isFormVisible: false
-                  })}
-                  className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600"
-                >
-                  Add
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <AddSubtaskModal
+          subtaskData={newSubtaskData}
+          onSubmit={handleSubmitSubtask}
+          onCancel={() => setNewSubtaskData({
+            parentId: null,
+            title: '',
+            isFormVisible: false
+          })}
+          onChange={(e) => setNewSubtaskData({
+            ...newSubtaskData,
+            title: e.target.value
+          })}
+        />
       )}
     </div>
   );

@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "module": "commonjs",
+    "moduleResolution": "node"
+  }
+}
